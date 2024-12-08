@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="AdminMapper">
+<!-- 관리자 로그인 -->
+<select id="selectAdminLogin" resultType="int">
+	SELECT count(*) 
+	FROM adminAccount
+	WHERE 1=1
+		AND userId = #{userId}
+		AND userPass = #{userPass}
+</select>
+<!-- 물품 엑셀파일 업로드 -->
+<insert id="insertProductExcelData" parameterType="java.util.Map">
+INSERT INTO product (cord,category,foodtype,name,option,size,price,producer,origin,manufacturing
+			,ariculturalYn,livestock,importedYn,composition,storage,caution,consulation,multipleYn,freeYn)
+	VALUES 
+		<foreach item="item" collection="excelData" separator="," open="(" close=")">
+			#{item.cord},#{item.category},#{item.foodtype},#{item.name},#{item.option},#{item.size},#{item.price},#{item.producer}
+			,#{item.origin},#{item.manufacturing},#{item.ariculturalYn},#{item.livestock},#{item.importedYn},#{item.composition}
+			,#{item.storage},#{item.caution},#{item.consulation},#{item.multipleYn},#{item.freeYn}
+		</foreach>
+</insert>
+<!-- 물품 엑셀파일 사진 업로드 (물품엑셀파일 등록시 동시에 수행)-->
+<insert id="insertProductExcelImg">
+INSERT INTO productFile(originFileName,storedFileName,fileSize)
+		VALUES (#{originFileName},#{storedFilName},#{fileSize})
+</insert>
+
+<!-- 물품 리스트 -->
+<select id="selectProductList" resultType="com.dailyMall.www.vo.ProductVO">
+SELECT  R.rnum,R.idx,R.cord,R.category,R.foodtype,R.name,R.option,R.size,R.price,R.producer,R.origin,R.manufacturing
+		,R.ariculturalYn,R.livestock,R.importedYn,R.composition,R.storage,R.caution,R.consulation,R.multipleYn,R.freeYn,R.regDate
+	FROM( SELECT idx,cord,category,foodtype,name,option,size,price,producer,origin,manufacturing
+			,ariculturalYn,livestock,importedYn,composition,storage,caution,consulation,multipleYn,freeYn,regDate
+			,ROW_NUMBER() OVER(ORDER BY idx DESC) AS rnum
+		FROM product
+	) R
+	
+</select>
+
+<!--idx에 따른 물품 조회 (상세) -->
+<select id="selectProductByIdx" resultType="com.dailyMall.www.vo.ProductVO">
+SELECT  
+	idx,cord,category,foodtype,name,option,size,price,producer,origin,manufacturing
+	,ariculturalYn,livestock,importedYn,composition,storage,caution,consulation,multipleYn,freeYn,regDate
+FROM product 
+WHERE idx=#{idx}
+</select>
+
+<!-- 물품 엑셀파일 재 업로드(수정 )-->
+<update id="updateProductExcelData">
+UPDATE product SET cord=#{cord},category=#{category},foodtype=#{foodtype},name=#{name}
+				,option=#{option},size=#{size},price=#{price},producer=#{producer},origin=#{origin},manufacturing=#{manufacturing}
+				,ariculturalYn=#{ariculturalYn},livestock=#{livestock},importedYn=#{importedYn},composition=#{composition}
+				,storage=#{storage},caution=#{caution},consulation=#{consulation},multipleYn=#{multipleYn},freeYn=#{freeYn}
+WHERE idx=#{idx}
+</update>
+
+<!-- 물품 정보 삭제 -->
+<delete id="deleteProductExcelData">
+DELETE FROM product
+WHERE idx=#{idx}
+</delete>	
+	
+</mapper>
+
